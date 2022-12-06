@@ -10,31 +10,36 @@ struct User {
     string name, password;
 };
 
+struct Friend {
+    string name, surname, email, phone_number, adress;
+    int friends_id;
+};
 
-void saving_users_to_file(vector <User> &users){
+void saving_users_to_file(vector <User> &users) {
 
-    int users_amount = users.size();
     string name, password;
 
     fstream file;
 
+
+
     file.open("users.txt", ios::out);
-    if (file.good() == true){
+    if (file.good()) {
+        int users_amount = users.size(); // I have to write it in this way to pass it to for loop, because while refreshing warning is going to occur.
+        for (int i = 0; i < users_amount; i++) {
 
-        for (int i = 0; i < users.size(); i++){
-
-
-        file << users[i].ID << '|';
-        file << users[i].name << '|';
-        file << users[i].password << '|';
+            file << users[i].ID << '|';
+            file << users[i].name << '|';
+            file << users[i].password << '|' << endl;
 
         }
-    }
 
-    else
+        file.close();
+    } else
         cout << "couldnt open a file." << endl;
 
 }
+
 
 string load_line() {
     string input;
@@ -57,10 +62,10 @@ int registration(vector <User>&users, int usersamount) {
 
     users.push_back(new_user);
 
-    saving_users_to_file(users);
-
     cout << "account registered." << endl;
     Sleep(1500);
+
+    saving_users_to_file(users);
 
     return usersamount + 1;
 }
@@ -115,12 +120,56 @@ void password_changing(vector <User> &users, int users_amount, int Logged_user_I
 
 }
 
-int main () {
-    vector <User> users;
-    int logged_users_ID = 0;
-    int users_amount = 0;
+int loading_users_from_file(vector <User> &users) {
 
-    char choice_1,choice_2;
+    User new_user;
+    string users_data = "";
+    fstream file;
+    file.open("users.txt", ios :: in);
+
+    if (file.good()) {
+        while(getline(file,users_data)) {
+            string persons_data{};
+            int users_number = 1;
+
+            for (size_t index{}; index < users_data.length(); ++index) {
+                if (users_data[index] != '|') {
+                    persons_data += users_data[index];
+                } else {
+                    switch(users_number) {
+                    case 1:
+                        new_user.ID = stoi(persons_data);
+                        break;
+                    case 2:
+                        new_user.name = persons_data;
+                        break;
+                    case 3:
+                        new_user.password = persons_data;
+                        break;
+                    }
+                        persons_data = "";
+                        users_number ++;
+                    }
+                }
+            }
+            users.push_back(new_user);
+        }
+
+    file.close();
+    return users.size();
+   // return new_user +1 ;
+}
+
+int main () {
+
+    vector <User> users;
+    vector <Friend> friends;
+
+    int logged_users_ID = 0;
+
+    int users_amount = loading_users_from_file(users);
+
+    char choice_1, choice_2;
 
     while (true) {
 
