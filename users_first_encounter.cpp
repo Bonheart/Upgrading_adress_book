@@ -39,24 +39,20 @@ void saving_users_to_file(vector <User> &users) {
         users_file.close();
 }
 
-void saving_friends_to_file(vector <Friend> &friends, vector <User> &users) {
+void saving_friends_to_file(vector <Friend> &friends, int Logged_user_id) {
 
     fstream friends_file;
     string name, surname, phone_number, email, adress;
 
     friends_file.open ("friends.txt", ios::out );
 
-    if (friends_file.good() == true ) {
+    if (friends_file.good()) {
 
         int friends_amount = friends.size();
         for (int i = 0; i < friends_amount; i++) {
 
             friends_file << friends[i].friends_id << "|";
-        }
-        for (int j = 0; j < users.size(); j++){
-            friends_file << users[j].ID<< "|";
-        }
-        for (int i = 0; i < friends_amount; i++) {
+            friends_file << Logged_user_id << "|";
             friends_file << friends[i].name<< "|";
             friends_file << friends[i].surname << "|";
             friends_file << friends[i].phone_number<< "|";
@@ -202,7 +198,7 @@ int loading_users_from_file(vector <User> &users) {
     return new_user.ID ;
 }
 
-int insert_friends_data(vector <Friend> &friends, vector <User> &users, int friends_amount) {
+int insert_friends_data(vector <Friend> &friends, int Logged_user_id, int friends_amount) {
 
     Friend new_friends;
     string name, surname, phone_number, email, adress;
@@ -226,7 +222,7 @@ int insert_friends_data(vector <Friend> &friends, vector <User> &users, int frie
 
     friends.push_back(new_friends);
 
-    saving_friends_to_file(friends,users);
+    saving_friends_to_file(friends,Logged_user_id);
 
     return friends.size()+1;
 }
@@ -341,12 +337,12 @@ int main () {
             cout << "8. Logout" << endl;
             cin >> choice_2;
 
-           // int friends_amount = loading_friends_from_file(friends,logged_users_ID); here was this command. now its moved above. when it was here, saving had tripled my friends...
+           // int friends_amount = loading_friends_from_file(friends,logged_users_ID); here was this command. now its moved above. when it was here, saving had tripled
 
             switch (choice_2) {
 
                     case '1' : {
-                        friends_amount = insert_friends_data(friends,users,friends_amount);
+                        friends_amount = insert_friends_data(friends,logged_users_ID,friends_amount);
                         system("pause");
                         break;
                     }
