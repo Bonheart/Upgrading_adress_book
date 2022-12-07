@@ -19,36 +19,66 @@ void saving_users_to_file(vector <User> &users) {
 
     string name, password;
 
-    fstream file;
+    fstream users_file;
 
+    users_file.open("users.txt", ios::out);
+    if (users_file.good()) {
 
-
-    file.open("users.txt", ios::out);
-    if (file.good()) {
         int users_amount = users.size(); // I have to write it in this way to pass it to for loop, because while refreshing warning is going to occur.
         for (int i = 0; i < users_amount; i++) {
 
-            file << users[i].ID << '|';
-            file << users[i].name << '|';
-            file << users[i].password << '|' << endl;
+            users_file << users[i].ID << '|';
+            users_file << users[i].name << '|';
+            users_file << users[i].password << '|' << endl;
 
         }
 
-        file.close();
-    } else
+    } else{
         cout << "couldnt open a file." << endl;
-
+    }
+        users_file.close();
 }
 
+void saving_friends_to_file(vector <Friend> &friends, vector <User> &users) {
+
+    fstream friends_file;
+    string name, surname, phone_number, email, adress;
+
+    friends_file.open ("friends.txt", ios::out );
+
+    if (friends_file.good() == true ) {
+
+        int friends_amount = friends.size();
+        for (int i = 0; i < friends_amount; i++) {
+
+            friends_file << friends[i].friends_id << "|";
+        }
+        for (int j = 0; j < users.size(); j++){
+            friends_file << users[j].ID<< "|";
+        }
+        for (int i = 0; i < friends_amount; i++) {
+            friends_file << friends[i].name<< "|";
+            friends_file << friends[i].surname << "|";
+            friends_file << friends[i].phone_number<< "|";
+            friends_file << friends[i].email << "|";
+            friends_file << friends[i].adress << "|" << endl;
+
+        }
+        friends_file.close();
+    } else {
+        cout << "couldnt open file" << endl;
+    }
+}
 
 string load_line() {
+
     string input;
     cin.sync();
     getline(cin, input);
     return input;
 }
 
-int registration(vector <User>&users, int usersamount) {
+int registration(vector <User> &users, int usersamount) {
 
     User new_user;
     string name, password;
@@ -78,9 +108,13 @@ int logging ( vector <User> &users, int usersamount) {
 
     int i = 0;
     usersamount = users.size();
+
     while( i < usersamount) {
+
         if (users[i].name == name ) {
-            for (int j = 0; j < 3; j++) {
+
+            for (int j = 3; j >= 0; j--) {
+
                 cout << "enter password: " << endl;
                 cin >> password;
 
@@ -89,35 +123,41 @@ int logging ( vector <User> &users, int usersamount) {
                     Sleep(1500);
                     return users[i].ID;
                 } else {
-                    cout << "acces denied. tries left: " << 2 - j << endl;
+                    cout << "acces denied. tries left: " << j-1 << endl;
+
+                    if (j == 1) { //if j would be equal to 0, then counting would've been to -1
+                        Sleep(1500);
+                        system("cls");
+                        cout << "sorry. console blocked. try to log later" << endl;
+                        exit(0);
+
+                    }
                 }
             }
         }
         i++;
     }
-    cout << "no user with that login. try that again" << endl;
-    Sleep(2000);
+    cout << "no user found. try again" << endl;
+    Sleep(1000);
     return 0;
 }
 
-void password_changing(vector <User> &users, int users_amount, int Logged_user_ID){
+void password_changing(vector <User> &users, int users_amount, int Logged_user_ID) {
 
     string password;
     cout << "set new password: " << endl;
     cin >> password;
 
-    for (int i = 0; i < users_amount; i++){
+    for (int i = 0; i < users_amount; i++) {
 
-        if (users[i].ID == Logged_user_ID){
+        if (users[i].ID == Logged_user_ID) {
+
             users[i].password = password;
             cout << "password set correctly" << endl;
             Sleep(500);
+
         }
-
-
     }
-
-
 }
 
 int loading_users_from_file(vector <User> &users) {
@@ -128,7 +168,9 @@ int loading_users_from_file(vector <User> &users) {
     file.open("users.txt", ios :: in);
 
     if (file.good()) {
+
         while(getline(file,users_data)) {
+
             string persons_data{};
             int users_number = 1;
 
@@ -147,17 +189,103 @@ int loading_users_from_file(vector <User> &users) {
                         new_user.password = persons_data;
                         break;
                     }
-                        persons_data = "";
-                        users_number ++;
-                    }
+                    persons_data = "";
+                    users_number ++;
                 }
             }
             users.push_back(new_user);
         }
 
+    }
     file.close();
-    return users.size();
-   // return new_user +1 ;
+    //return users.size();
+    return new_user.ID ;
+}
+
+int insert_friends_data(vector <Friend> &friends, vector <User> &users, int friends_amount) {
+
+    Friend new_friends;
+    string name, surname, phone_number, email, adress;
+
+    cout << "insert name:" << endl;
+    new_friends.name = load_line();
+
+    cout << "insert surname: " << endl;
+    new_friends.surname = load_line();
+
+    cout << "insert phone number: " << endl;
+    new_friends.phone_number = load_line();
+
+    cout << "insert adress: " << endl;
+    new_friends.adress = load_line();
+
+    cout << "insert email: " << endl;
+    new_friends.email = load_line();
+
+    new_friends.friends_id = friends.size()+1;
+
+    friends.push_back(new_friends);
+
+    saving_friends_to_file(friends,users);
+
+    return friends.size()+1;
+}
+
+int loading_friends_from_file(vector <Friend>& friends,int Logged_user_id) {
+
+    Friend new_friends;
+    string personals_data = "";
+    fstream file;
+    file.open("friends.txt", ios :: in);
+
+    if (file.good()) {
+
+        while(getline(file,personals_data)) {
+
+            string persons_data{};
+            int persons_number = 1;
+
+            for (size_t index{}; index < personals_data.length(); ++index) {
+
+                if (personals_data[index] != '|') {
+                    persons_data += personals_data[index];
+
+                } else {
+
+                    switch(persons_number) {
+
+                    case 1:
+                        new_friends.friends_id = stoi(persons_data);
+                        break;
+               //     case 2:
+               //         new_friends.name = persons_data;
+                 //       break;
+                    case 2:
+                        new_friends.name = persons_data;
+                        break;
+                    case 3:
+                        new_friends.surname = persons_data;
+                        break;
+                    case 4:
+                        new_friends.phone_number = persons_data;
+                        break;
+                    case 5:
+                        new_friends.email = persons_data;
+                        break;
+                    case 6:
+                        new_friends.adress = persons_data;
+                        break;
+                    }
+                    persons_data = "";
+                    persons_number ++;
+                }
+            }
+            friends.push_back(new_friends);
+        }
+    }
+    file.close();
+
+    return new_friends.friends_id ;
 }
 
 int main () {
@@ -168,6 +296,8 @@ int main () {
     int logged_users_ID = 0;
 
     int users_amount = loading_users_from_file(users);
+
+    int friends_amount = loading_friends_from_file(friends,logged_users_ID);
 
     char choice_1, choice_2;
 
@@ -199,7 +329,6 @@ int main () {
             }
         }
 
-
         else {
             system("cls");
             cout << "1. Add friend" << endl;
@@ -210,68 +339,56 @@ int main () {
             cout << "6. Delete user" << endl;
             cout << "7. Change Password" << endl;
             cout << "8. Logout" << endl;
-            cout << "9. Exit" << endl;
             cin >> choice_2;
 
-        switch (choice_2) {
-/*
-        case '1' : {
-           persons_amount = insert_persons_data(people,persons_amount);
-            system("pause");
-            break;
-        }
-        case '2' : {
-            showing_people_by_name (people);
-            system("pause");
-            break;
-        }
-        case '3' : {
-            showing_people_by_surname(people);
-            system("pause");
-            break;
-        }
-        case '4' : {
-            every_single_person(people);
-            system("pause");
-            break;
-        }
-        case '5': {
-            modifying_person(people);
-            system("pause");
-            break;
-        }
-        case '6': {
-            deleting_user(people);
-            break;
-        }
-        */
-        case '7': {
-            password_changing(users,users_amount,logged_users_ID);
-            break;
-        }
+           // int friends_amount = loading_friends_from_file(friends,logged_users_ID); here was this command. now its moved above. when it was here, saving had tripled my friends...
 
-        case '8': {
-            logged_users_ID =0;
-            break;
-        }
-/*
-        case '9': {
-            exit(0);
-        }
-        default: {
-            cout << "try that again " << endl;
-            cin>> choice_2;
-            system("pause");
+            switch (choice_2) {
 
-        }
-        */
-        }
+                    case '1' : {
+                        friends_amount = insert_friends_data(friends,users,friends_amount);
+                        system("pause");
+                        break;
+                    }
+       /*             case '2' : {
+                        showing_friends_by_name (friends);
+                        system("pause");
+                        break;
+                    }
+                    case '3' : {
+                        showing_friends_by_surname(friends);
+                        system("pause");
+                        break;
+                    }
+                    case '4' : {
+                        every_single_person(friends);
+                        system("pause");
+                        break;
+                    }
+                    case '5': {
+                        modifying_person(friends);
+                        system("pause");
+                        break;
+                    }
+                    case '6': {
+                        deleting_user(friends);
+                        break;
+                    }
+                    */
+            case '7': {
+                password_changing(users,users_amount,logged_users_ID);
+                break;
+            }
+
+            case '8': {
+                logged_users_ID =0;
+                break;
+            }
+            }
 
 
         }
 
     }
-        return 0;
-
-
+    return 0;
 }
