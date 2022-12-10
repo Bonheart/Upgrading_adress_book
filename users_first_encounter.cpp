@@ -98,7 +98,9 @@ string load_line() {
 int registration(vector <User> &users) {
 
     User new_user;
-    string name, password;
+
+    string name = "", password = "";
+
     cout << "set users name: " << endl;
     new_user.name = load_line();
 
@@ -119,7 +121,8 @@ int registration(vector <User> &users) {
 
 int logging ( vector <User> &users) {
 
-    string name, password;
+    string name = "", password = "";
+
     cout << "enter login: " << endl;
     cin >> name;
 
@@ -143,7 +146,7 @@ int logging ( vector <User> &users) {
                     cout << "acces denied. tries left: " << j-1 << endl;
 
                     if (j == 1) { //if j would be equal to 0, then counting would've been to -1
-                        Sleep(1500);
+                        Sleep(250);
                         system("cls");
                         cout << "sorry. console blocked. try to log later" << endl;
                         exit(0);
@@ -482,6 +485,31 @@ void modyfying_friend(vector <Friend> &friends, int logged_users_id) {
     }
     saving_friends_to_file(friends,logged_users_id);
 }
+
+bool checking_if_friend_exists(vector <Friend> & friends,int friends_id, int logged_users_id){
+
+    int friends_amount = friends.size();
+    int friends_number = 0;
+    bool answer;
+
+    int  i = 0;
+    while (i < friends_amount) {
+
+        if ((friends_id == friends[i].friends_id) && (logged_users_id == friends[i].users_id)) {
+            friends_number++;
+            answer = true;
+            break;
+        }
+        i++;
+    }
+    if (friends_number == 0){
+        cout << "Dein Freund steht nicht in deinem Liste." << endl;
+        answer = false;
+        system ("pause");
+    }
+    return answer;
+}
+
 void deleting_friend(vector <Friend> &friends, int logged_users_id) {
 
     int friends_id_to_remove;
@@ -505,39 +533,38 @@ void deleting_friend(vector <Friend> &friends, int logged_users_id) {
 
         }
     }
-
     cout << "enter user's ID you wish to delete: ";
     cin >> friends_id_to_remove;
 
-    cout << "are you sure? (y/n)" << endl;
-    cin >> choice;
+    if (checking_if_friend_exists(friends,friends_id_to_remove,logged_users_id) == true) {
 
-    while (choice != 'y' || choice != 'n') {
+        cout << "are you sure? (y/n)" << endl;
+        cin >> choice;
 
-        if (choice == 'y') {
+        while (choice != 'y' || choice != 'n') {
 
-            for (int i = 0; i < friends_amount; i ++) {
+            if (choice == 'y') {
 
-                if (friends[i].friends_id == friends_id_to_remove && friends[i].users_id == logged_users_id) {
-                    friends.erase(friends.begin() + i);
-                    break;
+                for (int i = 0; i < friends_amount; i ++) {
+
+                    if (friends_id_to_remove == friends[i].friends_id && friends[i].users_id == logged_users_id) {
+                        friends.erase(friends.begin() + i);
+                    }
                 }
+                cout << "user deleted." << endl;
+                system("pause");
+                break;
 
+            } else if (choice == 'n') {
+                cout << "OK. user not deleted" << endl;
+                system ("pause");
+                break;
+
+            } else {
+                cout << "enter proper character: " << endl;
+                cin >> choice;
             }
-            cout << "user deleted." << endl;
-            system("pause");
-            break;
-        } else if (choice == 'n') {
-            cout << "OK. user not deleted" << endl;
-            system ("pause");
-            break;
-        } else {
-            cout << "enter proper character: " << endl;
-            cin >> choice;
         }
-    }
-    if (friends.friends_id == 0) {
-        cout << "no friend found!" << endl;
     }
     saving_friends_to_file(friends,logged_users_id);
 }
