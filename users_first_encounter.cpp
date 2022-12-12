@@ -62,29 +62,44 @@ void saving_users_to_file(vector <User> &users) {
 
 void saving_friends_to_file(vector <Friend> &friends, int Logged_user_id) {
 
-    fstream friends_file;
-    string name, surname, phone_number, email, adress;
+    fstream friends_file, temporary_file;
+
+    string name, surname, phone_number, email, adress, persons_data;
+
+    int friends_id, users_id;
+    int line_number = 1;
 
     friends_file.open ("friends.txt", ios::out );
+    temporary_file.open ("temporary_file.txt", ios :: app);
 
-    if (friends_file.good()) {
+    if (friends_file.good() ) {
 
         int friends_amount = friends.size();
         for (int i = 0; i < friends_amount; i++) {
 
             friends_file << friends[i].friends_id << "|";
             friends_file << friends[i].users_id << "|";
-            friends_file << friends[i].name<< "|";
+            friends_file << friends[i].name << "|";
             friends_file << friends[i].surname << "|";
             friends_file << friends[i].phone_number<< "|";
             friends_file << friends[i].email << "|";
             friends_file << friends[i].adress << "|" << endl;
 
         }
-        friends_file.close();
-    } else {
-        cout << "couldnt open file" << endl;
     }
+    while (!friends_file.eof()) {
+
+        getline(friends_file,persons_data);
+        switch(line_number) {
+
+        temporary_file << persons_data;
+        break;
+        line_number ++;
+        }
+    }
+    friends_file.close();
+    temporary_file.close();
+
 }
 
 string load_line() {
@@ -180,19 +195,12 @@ void password_changing(vector <User> &users, int Logged_user_ID) {
     }
 }
 
-int checking_last_friends_id(vector <Friend> &friends){
+int checking_last_friends_id(vector <Friend> &friends) {
 
     int id_to_return ;
-/*
-    if(id_to_return == 0){
-    id_to_return = friends.back().friends_id + 1;
-    }
-    */
-    if(friends.back().friends_id == 0){
 
-        id_to_return = friends.back().friends_id +1;
+    id_to_return = friends.back().friends_id;
 
-    }
     cout << id_to_return << endl;
 
     return id_to_return;
@@ -262,25 +270,20 @@ int insert_friends_data(vector <Friend> &friends, int Logged_user_id, int friend
 
     new_friends.users_id = Logged_user_id;
 
-    new_friends.friends_id = friends_amount;
+    new_friends.friends_id = friends_amount +1;
 
-    if(new_friends.friends_id == 0){
-
-      new_friends.friends_id  = new_friends.friends_id + 1;
-    }
-
-    new_friends.friends_id = friends_amount + 1;
+    // new_friends.friends_id = checking_last_friends_id(friends) + 1;
 
     friends.push_back(new_friends);
 
-  //  checking_last_friends_id(friends);
+    checking_last_friends_id(friends);
 
     saving_friends_to_file(friends,Logged_user_id);
 
     return new_friends.friends_id;
 }
 
-int loading_friends_from_file(vector <Friend>& friends) {
+int loading_friends_from_file(vector <Friend>& friends, int logged_user_id) {
 
     Friend new_friends;
     string personals_data = "";
@@ -335,6 +338,30 @@ int loading_friends_from_file(vector <Friend>& friends) {
     file.close();
 
     return new_friends.friends_id ;
+}
+
+bool checking_if_friend_exists(vector <Friend> & friends,int friends_id, int logged_users_id) {
+
+    int friends_amount = friends.size();
+    int friends_number = 0;
+    bool answer;
+
+    int  i = 0;
+    while (i < friends_amount) {
+
+        if ((friends_id == friends[i].friends_id) && (logged_users_id == friends[i].users_id)) {
+            friends_number++;
+            answer = true;
+            break;
+        }
+        i++;
+    }
+    if (friends_number == 0) {
+        cout << "Dein Freund steht nicht in deinem Liste." << endl;
+        answer = false;
+        system ("pause");
+    }
+    return answer;
 }
 
 void showing_friends_by_name (vector <Friend> &friends,int logged_users_id) {
@@ -394,7 +421,10 @@ void showing_every_friend(vector <Friend> &friends, int logged_users_id) {
 
     int friends_amount = friends.size();
 
-    for (int i = 0; i < friends_amount; i++) {
+    int i = 0;
+    int check_if_friend_is_existing = 0;
+
+    while (i < friends_amount) {
 
         if(friends[i].users_id == logged_users_id) {
 
@@ -405,8 +435,12 @@ void showing_every_friend(vector <Friend> &friends, int logged_users_id) {
             cout << "Friend's e-mail " << " --------- " << friends[i].email << endl;
             cout << "Friend's adress " << " --------- " <<  friends[i].adress << endl;
             cout << endl;
-
+            check_if_friend_is_existing ++;
         }
+        i++;
+    }
+    if (check_if_friend_is_existing == 0) {
+        cout << "You have no friends. Add some" <<endl;
     }
 }
 
@@ -514,30 +548,6 @@ void modyfying_friend(vector <Friend> &friends, int logged_users_id) {
     saving_friends_to_file(friends,logged_users_id);
 }
 
-bool checking_if_friend_exists(vector <Friend> & friends,int friends_id, int logged_users_id){
-
-    int friends_amount = friends.size();
-    int friends_number = 0;
-    bool answer;
-
-    int  i = 0;
-    while (i < friends_amount) {
-
-        if ((friends_id == friends[i].friends_id) && (logged_users_id == friends[i].users_id)) {
-            friends_number++;
-            answer = true;
-            break;
-        }
-        i++;
-    }
-    if (friends_number == 0){
-        cout << "Dein Freund steht nicht in deinem Liste." << endl;
-        answer = false;
-        system ("pause");
-    }
-    return answer;
-}
-
 void deleting_friend(vector <Friend> &friends, int logged_users_id) {
 
     Friend new_friends;
@@ -582,10 +592,10 @@ void deleting_friend(vector <Friend> &friends, int logged_users_id) {
                     }
                 }
                 cout << "user deleted." << endl;
-                checking_last_friends_id(friends);
-              //  saving_friends_to_file(friends,logged_users_id);
+                // checking_last_friends_id(friends);
+                //  saving_friends_to_file(friends,logged_users_id);
                 system("pause");
-              //  return friends_id_to_remove;
+                //  return friends_id_to_remove;
                 break;
 
             } else if (choice == 'n') {
@@ -601,7 +611,7 @@ void deleting_friend(vector <Friend> &friends, int logged_users_id) {
     }
     saving_friends_to_file(friends,logged_users_id);
 
- //   return new_friends.friends_id;
+//   return new_friends.friends_id;
 }
 
 int main () {
@@ -613,7 +623,7 @@ int main () {
     int friends_amount = 0;
 
     loading_users_from_file(users);
-    friends_amount = loading_friends_from_file(friends);
+    friends_amount = loading_friends_from_file(friends, logged_users_ID);
 
     char choice_1, choice_2;
 
@@ -641,7 +651,6 @@ int main () {
                 system("pause");
             }
         } else {
-
             friends_menu();
             cin >> choice_2;
 
