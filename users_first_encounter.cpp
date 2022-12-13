@@ -60,17 +60,36 @@ void saving_users_to_file(vector <User> &users) {
     users_file.close();
 }
 
-void saving_friends_to_file(vector <Friend> &friends, int Logged_user_id) {
+void re_saving(vector <Friend> &friends) {
 
-    fstream friends_file, temporary_file;
+    string line;
 
-    string name, surname, phone_number, email, adress, persons_data;
+    ifstream friends_file;
+    friends_file.open("friends.txt");
 
-    int friends_id, users_id;
-    int line_number = 1;
+    ofstream temporary_file;
+    temporary_file.open("temp.txt");
+
+    while(getline(friends_file,line)) {
+
+        temporary_file << line << endl;
+
+    }
+
+    friends_file.close();
+    temporary_file.close();
+  //  remove("friends.txt");
+   // rename("temp.txt", "friends.txt");
+
+}
+
+void saving_friends_to_file(vector <Friend> &friends) {
+
+    fstream friends_file;
+
+    string name, surname, phone_number, email, adress;
 
     friends_file.open ("friends.txt", ios::out );
-    temporary_file.open ("temporary_file.txt", ios :: app);
 
     if (friends_file.good() ) {
 
@@ -87,19 +106,9 @@ void saving_friends_to_file(vector <Friend> &friends, int Logged_user_id) {
 
         }
     }
-    while (!friends_file.eof()) {
-
-        getline(friends_file,persons_data);
-        switch(line_number) {
-
-        temporary_file << persons_data;
-        break;
-        line_number ++;
-        }
-    }
     friends_file.close();
-    temporary_file.close();
 
+  //  re_saving(friends);
 }
 
 string load_line() {
@@ -272,72 +281,81 @@ int insert_friends_data(vector <Friend> &friends, int Logged_user_id, int friend
 
     new_friends.friends_id = friends_amount +1;
 
-    // new_friends.friends_id = checking_last_friends_id(friends) + 1;
-
     friends.push_back(new_friends);
 
     checking_last_friends_id(friends);
 
-    saving_friends_to_file(friends,Logged_user_id);
+    saving_friends_to_file(friends);
 
     return new_friends.friends_id;
 }
 
-int loading_friends_from_file(vector <Friend>& friends, int logged_user_id) {
+int loading_friends_from_file(vector <Friend> &friends, int logged_user_id) {
 
     Friend new_friends;
+
     string personals_data = "";
     fstream file;
     file.open("friends.txt", ios :: in);
 
     if (file.good()) {
 
-        while(getline(file,personals_data)) {
+        for (int i = 0; i < friends.size(); i ++){
 
-            string persons_data{};
-            int persons_number = 1;
+            if(logged_user_id == friends[i].users_id ){
 
-            for (size_t index{}; index < personals_data.length(); ++index) {
+                while(getline(file,personals_data)) {
 
-                if (personals_data[index] != '|') {
-                    persons_data += personals_data[index];
+                    string persons_data{};
+                    int persons_number = 1;
 
-                } else {
+                    for (size_t index{}; index < personals_data.length(); ++index) {
 
-                    switch(persons_number) {
+                        if (personals_data[index] != '|') {
+                            persons_data += personals_data[index];
 
-                    case 1:
-                        new_friends.friends_id = stoi(persons_data);
-                        break;
-                    case 2:
-                        new_friends.users_id = stoi(persons_data);
-                        break;
-                    case 3:
-                        new_friends.name = persons_data;
-                        break;
-                    case 4:
-                        new_friends.surname = persons_data;
-                        break;
-                    case 5:
-                        new_friends.phone_number = persons_data;
-                        break;
-                    case 6:
-                        new_friends.email = persons_data;
-                        break;
-                    case 7:
-                        new_friends.adress = persons_data;
-                        break;
+                        } else {
+                            switch(persons_number) {
+
+                            case 1:
+                                new_friends.friends_id = stoi(persons_data);
+                                break;
+                            case 2:
+                                new_friends.users_id = stoi(persons_data);
+                                break;
+                            case 3:
+                                new_friends.name = persons_data;
+                                break;
+                            case 4:
+                                new_friends.surname = persons_data;
+                                break;
+                            case 5:
+                                new_friends.phone_number = persons_data;
+                                break;
+                            case 6:
+                                new_friends.email = persons_data;
+                                break;
+                            case 7:
+                                new_friends.adress = persons_data;
+                                break;
+                            }
+                            persons_data = "";
+                            persons_number ++;
+                        }
+                        friends.push_back(new_friends);
                     }
-                    persons_data = "";
-                    persons_number ++;
+                    //friends.push_back(new_friends);
                 }
+              //  friends.push_back(new_friends);
             }
-            friends.push_back(new_friends);
+           // friends.push_back(new_friends);
         }
+      //  friends.push_back(new_friends);
     }
+
     file.close();
 
-    return new_friends.friends_id ;
+    return friends.size();
 }
 
 bool checking_if_friend_exists(vector <Friend> & friends,int friends_id, int logged_users_id) {
@@ -364,7 +382,7 @@ bool checking_if_friend_exists(vector <Friend> & friends,int friends_id, int log
     return answer;
 }
 
-void showing_friends_by_name (vector <Friend> &friends,int logged_users_id) {
+void showing_friends_by_name (vector <Friend> &friends) {
     string name = "";
 
     cout << "enter surname to show friends with that name: " << endl;
@@ -375,7 +393,7 @@ void showing_friends_by_name (vector <Friend> &friends,int logged_users_id) {
     int friends_amount = friends.size();
     while (i < friends_amount) {
 
-        if (friends[i].name == name && friends[i].users_id == logged_users_id) {
+        if (friends[i].name == name) {
             cout << "Friend's ID " << " --------- " << friends[i].friends_id << endl;
             cout << "Friend's name " << " --------- " << friends[i].name << endl;
             cout << "Friend's surname " << " --------- " << friends[i].surname << endl;
@@ -391,7 +409,7 @@ void showing_friends_by_name (vector <Friend> &friends,int logged_users_id) {
         cout << "no person with that name!" << endl;
 }
 
-void showing_friends_by_surname (vector <Friend> &friends, int logged_users_id) {
+void showing_friends_by_surname (vector <Friend> &friends) {
     string surname = "";
 
     cout << "enter surname to show friends with that surname: " << endl;
@@ -401,7 +419,7 @@ void showing_friends_by_surname (vector <Friend> &friends, int logged_users_id) 
     int surname_number = 0;
     int friends_amount = friends.size();
     while (i < friends_amount) {
-        if (friends[i].surname == surname && friends[i].users_id == logged_users_id) {
+        if (friends[i].surname == surname) {
             cout << "Friend's ID " << " --------- " << friends[i].friends_id << endl;
             cout << "Friend's name " << " --------- " << friends[i].name << endl;
             cout << "Friend's surname " << " --------- " << friends[i].surname << endl;
@@ -417,7 +435,7 @@ void showing_friends_by_surname (vector <Friend> &friends, int logged_users_id) 
         cout << "no person with that surname!" << endl;
 }
 
-void showing_every_friend(vector <Friend> &friends, int logged_users_id) {
+void showing_every_friend(vector <Friend> &friends) {
 
     int friends_amount = friends.size();
 
@@ -425,8 +443,6 @@ void showing_every_friend(vector <Friend> &friends, int logged_users_id) {
     int check_if_friend_is_existing = 0;
 
     while (i < friends_amount) {
-
-        if(friends[i].users_id == logged_users_id) {
 
             cout << "Friend's ID " << " --------- " << friends[i].friends_id << endl;
             cout << "Friend's name " << " --------- " << friends[i].name << endl;
@@ -436,15 +452,17 @@ void showing_every_friend(vector <Friend> &friends, int logged_users_id) {
             cout << "Friend's adress " << " --------- " <<  friends[i].adress << endl;
             cout << endl;
             check_if_friend_is_existing ++;
-        }
+
         i++;
     }
+
     if (check_if_friend_is_existing == 0) {
         cout << "You have no friends. Add some" <<endl;
     }
+
 }
 
-void modyfying_friend(vector <Friend> &friends, int logged_users_id) {
+void modyfying_friend(vector <Friend> &friends) {
 
     string name = "", surname = "", phone_number = "", email = "", adress = "";
 
@@ -456,7 +474,7 @@ void modyfying_friend(vector <Friend> &friends, int logged_users_id) {
     cout << "------------ YOUR FRIEND'S LIST ------------" << endl;
     for (int i = 0; i < friends_amount; i++) {
 
-        if(friends[i].users_id == logged_users_id) {
+        if(friends[i].users_id) {
 
             cout << "Friend's ID " << " --------- " << friends[i].friends_id << endl;
             cout << "Friend's name " << " --------- " << friends[i].name << endl;
@@ -478,7 +496,7 @@ void modyfying_friend(vector <Friend> &friends, int logged_users_id) {
 
     while (i < friends_amount) {
 
-        if ( friends_id_to_edit == friends[i].friends_id && friends[i].users_id == logged_users_id) {
+        if ( friends_id_to_edit == friends[i].friends_id ) {
 
             cout << "--------- YOU ARE CURRENTLY MODIFYING ---------" << "\n\n";
             cout << friends[i].name << endl;
@@ -545,10 +563,10 @@ void modyfying_friend(vector <Friend> &friends, int logged_users_id) {
     if (id_number == 0) {
         cout << "Kein Freund gefunden! Es tut mir leid..." << endl;
     }
-    saving_friends_to_file(friends,logged_users_id);
+    saving_friends_to_file(friends);
 }
 
-void deleting_friend(vector <Friend> &friends, int logged_users_id) {
+int deleting_friend(vector <Friend> &friends) {
 
     Friend new_friends;
 
@@ -561,7 +579,7 @@ void deleting_friend(vector <Friend> &friends, int logged_users_id) {
 
     for (int i = 0; i < friends_amount; i++) {
 
-        if(friends[i].users_id == logged_users_id) {
+        if(friends[i].users_id) {
 
             cout << "Friend's ID " << " --------- " << friends[i].friends_id << endl;
             cout << "Friend's name " << " --------- " << friends[i].name << endl;
@@ -576,7 +594,7 @@ void deleting_friend(vector <Friend> &friends, int logged_users_id) {
     cout << "enter user's ID you wish to delete: ";
     cin >> friends_id_to_remove;
 
-    if (checking_if_friend_exists(friends,friends_id_to_remove,logged_users_id) == true) {
+  //  if (checking_if_friend_exists(friends,friends_id_to_remove,logged_users_id) == true) {
 
         cout << "are you sure? (y/n)" << endl;
         cin >> choice;
@@ -587,7 +605,7 @@ void deleting_friend(vector <Friend> &friends, int logged_users_id) {
 
                 for (int i = 0; i < friends_amount; i ++) {
 
-                    if (friends_id_to_remove == friends[i].friends_id && friends[i].users_id == logged_users_id) {
+                    if (friends_id_to_remove == friends[i].friends_id ) {
                         friends.erase(friends.begin() + i);
                     }
                 }
@@ -607,11 +625,11 @@ void deleting_friend(vector <Friend> &friends, int logged_users_id) {
                 cout << "enter proper character: " << endl;
                 cin >> choice;
             }
-        }
+   //     }
     }
-    saving_friends_to_file(friends,logged_users_id);
+    saving_friends_to_file(friends);
 
-//   return new_friends.friends_id;
+    return checking_last_friends_id(friends);
 }
 
 int main () {
@@ -651,6 +669,7 @@ int main () {
                 system("pause");
             }
         } else {
+         //   friends_amount = loading_friends_from_file(friends, logged_users_ID);
             friends_menu();
             cin >> choice_2;
 
@@ -662,34 +681,34 @@ int main () {
                 break;
             }
             case '2' : {
-                showing_friends_by_name (friends,logged_users_ID);
+                showing_friends_by_name (friends);
                 system("pause");
                 break;
             }
             case '3' : {
-                showing_friends_by_surname(friends, logged_users_ID);
+                showing_friends_by_surname(friends);
                 system("pause");
                 break;
             }
             case '4' : {
-                showing_every_friend(friends, logged_users_ID);
+                showing_every_friend(friends);
                 system("pause");
                 break;
             }
 
             case '5': {
-                modyfying_friend(friends,logged_users_ID);
+                modyfying_friend(friends);
                 system("pause");
                 break;
             }
 
             case '6': {
-                deleting_friend(friends,logged_users_ID);
+                friends_amount = deleting_friend(friends);
                 break;
             }
 
             case '7': {
-                password_changing(users,logged_users_ID);
+                password_changing(users, logged_users_ID);
                 break;
             }
 
