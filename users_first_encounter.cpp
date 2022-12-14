@@ -78,8 +78,8 @@ void re_saving(vector <Friend> &friends) {
 
     friends_file.close();
     temporary_file.close();
-  //  remove("friends.txt");
-   // rename("temp.txt", "friends.txt");
+    //  remove("friends.txt");
+    // rename("temp.txt", "friends.txt");
 
 }
 
@@ -108,7 +108,7 @@ void saving_friends_to_file(vector <Friend> &friends) {
     }
     friends_file.close();
 
-  //  re_saving(friends);
+    //  re_saving(friends);
 }
 
 string load_line() {
@@ -283,11 +283,57 @@ int insert_friends_data(vector <Friend> &friends, int Logged_user_id, int friend
 
     friends.push_back(new_friends);
 
-    checking_last_friends_id(friends);
+    //checking_last_friends_id(friends);
 
     saving_friends_to_file(friends);
 
     return new_friends.friends_id;
+}
+
+string  getting_rid_of_first_line(string source_text, string first_vertical_line) {
+
+    size_t first_position_of_line;
+    string newstr = "";
+    first_position_of_line = source_text.find(first_vertical_line);
+
+    newstr = source_text.substr(0,first_position_of_line);
+
+    return newstr;
+}
+
+string  getting_rid_of_first_two_lines(string line_to_extract,string first_vertical_line, string second_vertical_line) {
+
+    size_t first_position,second_position;
+    string string_to_extract = "";
+
+    first_position = line_to_extract.find(first_vertical_line);
+
+    first_position++;
+    second_position = line_to_extract.find(second_vertical_line, first_position );
+
+    if (second_position != string::npos) {
+        string_to_extract = line_to_extract.substr(first_position, second_position - first_position);
+    }
+    return string_to_extract;
+}
+
+string  getting_rid_of_second_and_third(string source_text,string first_vertical_line, string second_vertical_line, string third_vertical_line) {
+
+    size_t first_position_of_line,second_position_of_line,third_position_of_line;
+    string newstr = "";
+    first_position_of_line = source_text.find(first_vertical_line);
+
+    first_position_of_line++;
+    second_position_of_line = source_text.find(second_vertical_line, first_position_of_line );
+
+    second_position_of_line++;
+    third_position_of_line = source_text.find(third_vertical_line,second_position_of_line);
+
+    if(third_position_of_line != string::npos) {
+
+        newstr = source_text.substr(second_position_of_line, third_position_of_line - second_position_of_line);
+    }
+    return newstr;
 }
 
 int loading_friends_from_file(vector <Friend> &friends, int logged_user_id) {
@@ -296,66 +342,36 @@ int loading_friends_from_file(vector <Friend> &friends, int logged_user_id) {
 
     string personals_data = "";
     fstream file;
+
     file.open("friends.txt", ios :: in);
 
     if (file.good()) {
 
-        for (int i = 0; i < friends.size(); i ++){
+        while(getline(file,personals_data)) {
 
-            if(logged_user_id == friends[i].users_id ){
+            int persons_number = 1;
 
-                while(getline(file,personals_data)) {
+            if(stoi(getting_rid_of_first_two_lines(personals_data,"|","|")) == logged_user_id ) {
 
-                    string persons_data{};
-                    int persons_number = 1;
+                for (size_t index{}; index < personals_data.length(); ++index) {
 
-                    for (size_t index{}; index < personals_data.length(); ++index) {
+                    switch(persons_number) {
+                    case 1:
+                        new_friends.friends_id = stoi(getting_rid_of_first_line(personals_data, "|"));
+                        new_friends.name = getting_rid_of_second_and_third(personals_data, "|", "|", "|");
 
-                        if (personals_data[index] != '|') {
-                            persons_data += personals_data[index];
-
-                        } else {
-                            switch(persons_number) {
-
-                            case 1:
-                                new_friends.friends_id = stoi(persons_data);
-                                break;
-                            case 2:
-                                new_friends.users_id = stoi(persons_data);
-                                break;
-                            case 3:
-                                new_friends.name = persons_data;
-                                break;
-                            case 4:
-                                new_friends.surname = persons_data;
-                                break;
-                            case 5:
-                                new_friends.phone_number = persons_data;
-                                break;
-                            case 6:
-                                new_friends.email = persons_data;
-                                break;
-                            case 7:
-                                new_friends.adress = persons_data;
-                                break;
-                            }
-                            persons_data = "";
-                            persons_number ++;
-                        }
-                        friends.push_back(new_friends);
+                        break;
                     }
-                    //friends.push_back(new_friends);
+                    personals_data = "";
+                    persons_number ++;
                 }
-              //  friends.push_back(new_friends);
+                friends.push_back(new_friends);
             }
-           // friends.push_back(new_friends);
         }
-      //  friends.push_back(new_friends);
     }
-
     file.close();
 
-    return friends.size();
+    return new_friends.friends_id;
 }
 
 bool checking_if_friend_exists(vector <Friend> & friends,int friends_id, int logged_users_id) {
@@ -405,6 +421,7 @@ void showing_friends_by_name (vector <Friend> &friends) {
         }
         i++;
     }
+    friends.clear();
     if (name_number == 0)
         cout << "no person with that name!" << endl;
 }
@@ -444,14 +461,14 @@ void showing_every_friend(vector <Friend> &friends) {
 
     while (i < friends_amount) {
 
-            cout << "Friend's ID " << " --------- " << friends[i].friends_id << endl;
-            cout << "Friend's name " << " --------- " << friends[i].name << endl;
-            cout << "Friend's surname " << " --------- " << friends[i].surname << endl;
-            cout << "Friend's phone number " << " --------- " << friends[i].phone_number << endl;
-            cout << "Friend's e-mail " << " --------- " << friends[i].email << endl;
-            cout << "Friend's adress " << " --------- " <<  friends[i].adress << endl;
-            cout << endl;
-            check_if_friend_is_existing ++;
+        cout << "Friend's ID " << " --------- " << friends[i].friends_id << endl;
+        cout << "Friend's name " << " --------- " << friends[i].name << endl;
+        cout << "Friend's surname " << " --------- " << friends[i].surname << endl;
+        cout << "Friend's phone number " << " --------- " << friends[i].phone_number << endl;
+        cout << "Friend's e-mail " << " --------- " << friends[i].email << endl;
+        cout << "Friend's adress " << " --------- " <<  friends[i].adress << endl;
+        cout << endl;
+        check_if_friend_is_existing ++;
 
         i++;
     }
@@ -594,38 +611,38 @@ int deleting_friend(vector <Friend> &friends) {
     cout << "enter user's ID you wish to delete: ";
     cin >> friends_id_to_remove;
 
-  //  if (checking_if_friend_exists(friends,friends_id_to_remove,logged_users_id) == true) {
+    //  if (checking_if_friend_exists(friends,friends_id_to_remove,logged_users_id) == true) {
 
-        cout << "are you sure? (y/n)" << endl;
-        cin >> choice;
+    cout << "are you sure? (y/n)" << endl;
+    cin >> choice;
 
-        while (choice != 'y' || choice != 'n') {
+    while (choice != 'y' || choice != 'n') {
 
-            if (choice == 'y') {
+        if (choice == 'y') {
 
-                for (int i = 0; i < friends_amount; i ++) {
+            for (int i = 0; i < friends_amount; i ++) {
 
-                    if (friends_id_to_remove == friends[i].friends_id ) {
-                        friends.erase(friends.begin() + i);
-                    }
+                if (friends_id_to_remove == friends[i].friends_id ) {
+                    friends.erase(friends.begin() + i);
                 }
-                cout << "user deleted." << endl;
-                // checking_last_friends_id(friends);
-                //  saving_friends_to_file(friends,logged_users_id);
-                system("pause");
-                //  return friends_id_to_remove;
-                break;
-
-            } else if (choice == 'n') {
-                cout << "OK. user not deleted" << endl;
-                system ("pause");
-                break;
-
-            } else {
-                cout << "enter proper character: " << endl;
-                cin >> choice;
             }
-   //     }
+            cout << "user deleted." << endl;
+            // checking_last_friends_id(friends);
+            //  saving_friends_to_file(friends,logged_users_id);
+            system("pause");
+            //  return friends_id_to_remove;
+            break;
+
+        } else if (choice == 'n') {
+            cout << "OK. user not deleted" << endl;
+            system ("pause");
+            break;
+
+        } else {
+            cout << "enter proper character: " << endl;
+            cin >> choice;
+        }
+        //     }
     }
     saving_friends_to_file(friends);
 
@@ -641,7 +658,6 @@ int main () {
     int friends_amount = 0;
 
     loading_users_from_file(users);
-    friends_amount = loading_friends_from_file(friends, logged_users_ID);
 
     char choice_1, choice_2;
 
@@ -669,7 +685,9 @@ int main () {
                 system("pause");
             }
         } else {
-         //   friends_amount = loading_friends_from_file(friends, logged_users_ID);
+
+            friends_amount = loading_friends_from_file(friends, logged_users_ID);
+
             friends_menu();
             cin >> choice_2;
 
@@ -714,6 +732,7 @@ int main () {
 
             case '8': {
                 logged_users_ID = 0;
+                friends.clear();
                 break;
             }
             default:
