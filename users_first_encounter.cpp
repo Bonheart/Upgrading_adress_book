@@ -42,7 +42,7 @@ void saving_users_to_file(vector <User> &users) {
 
     fstream users_file;
 
-    users_file.open("users.txt", ios::out);
+    users_file.open("users.txt", ios::out|ios::app);
     if (users_file.good()) {
 
         int users_amount = users.size(); // I have to write it in this way to pass it to for loop, because while refreshing warning is going to occur.
@@ -89,7 +89,7 @@ void saving_friends_to_file(vector <Friend> &friends) {
 
     string name, surname, phone_number, email, adress;
 
-    friends_file.open ("friends.txt", ios::out );
+    friends_file.open ("friends.txt", ios::out | ios :: app);
 
     if (friends_file.good() ) {
 
@@ -106,6 +106,7 @@ void saving_friends_to_file(vector <Friend> &friends) {
 
         }
     }
+    friends.clear();
     friends_file.close();
 
     //  re_saving(friends);
@@ -283,22 +284,20 @@ int insert_friends_data(vector <Friend> &friends, int Logged_user_id, int friend
 
     friends.push_back(new_friends);
 
-    //checking_last_friends_id(friends);
-
     saving_friends_to_file(friends);
 
     return new_friends.friends_id;
 }
 
-string  getting_rid_of_first_line(string source_text, string first_vertical_line) {
+string getting_rid_of_first_line(string source_text, string first_vertical_line) {
 
     size_t first_position_of_line;
-    string newstr = "";
+    string string_to_return = "";
     first_position_of_line = source_text.find(first_vertical_line);
 
-    newstr = source_text.substr(0,first_position_of_line);
+    string_to_return = source_text.substr(0,first_position_of_line);
 
-    return newstr;
+    return string_to_return;
 }
 
 string  getting_rid_of_first_two_lines(string line_to_extract,string first_vertical_line, string second_vertical_line) {
@@ -320,7 +319,7 @@ string  getting_rid_of_first_two_lines(string line_to_extract,string first_verti
 string  getting_rid_of_second_and_third(string source_text,string first_vertical_line, string second_vertical_line, string third_vertical_line) {
 
     size_t first_position_of_line,second_position_of_line,third_position_of_line;
-    string newstr = "";
+    string string_to_return = "";
     first_position_of_line = source_text.find(first_vertical_line);
 
     first_position_of_line++;
@@ -331,9 +330,44 @@ string  getting_rid_of_second_and_third(string source_text,string first_vertical
 
     if(third_position_of_line != string::npos) {
 
-        newstr = source_text.substr(second_position_of_line, third_position_of_line - second_position_of_line);
+        string_to_return = source_text.substr(second_position_of_line, third_position_of_line - second_position_of_line);
     }
-    return newstr;
+    return string_to_return;
+}
+
+string getting_last_lines_ID() {
+
+    string lastLine;
+    string filename = "friends.txt";
+    ifstream file;
+    string to_return ;
+    file.open(filename);
+    if(file.is_open()) {
+
+        file.seekg(-1,ios_base::end);
+
+        bool keepLooping = true;
+        while(keepLooping) {
+            char ch;
+            file.get(ch);
+
+            if((int)file.tellg() <= 1) {
+                file.seekg(0);
+                keepLooping = false;
+            } else if(ch == '\n') {
+                keepLooping = false;
+            } else {
+                file.seekg(-2,ios_base::cur);
+            }
+        }
+        getline(file,lastLine);
+        to_return = getting_rid_of_first_line(lastLine,"|");
+
+    }
+    file.close();
+
+    return to_return ;
+
 }
 
 int loading_friends_from_file(vector <Friend> &friends, int logged_user_id) {
@@ -341,7 +375,9 @@ int loading_friends_from_file(vector <Friend> &friends, int logged_user_id) {
     Friend new_friends;
 
     string personals_data = "";
+    string lastLine;
     fstream file;
+    int to_return_id ;
 
     file.open("friends.txt", ios :: in);
 
@@ -364,14 +400,19 @@ int loading_friends_from_file(vector <Friend> &friends, int logged_user_id) {
                     }
                     personals_data = "";
                     persons_number ++;
+
                 }
                 friends.push_back(new_friends);
             }
         }
+        return stoi(getting_last_lines_ID());
+        if(!file) {
+                to_return_id = 0;
+            }
     }
     file.close();
 
-    return new_friends.friends_id;
+    return to_return_id;
 }
 
 bool checking_if_friend_exists(vector <Friend> & friends,int friends_id, int logged_users_id) {
@@ -421,7 +462,7 @@ void showing_friends_by_name (vector <Friend> &friends) {
         }
         i++;
     }
-    friends.clear();
+
     if (name_number == 0)
         cout << "no person with that name!" << endl;
 }
@@ -448,6 +489,7 @@ void showing_friends_by_surname (vector <Friend> &friends) {
         }
         i++;
     }
+
     if (surname_number == 0)
         cout << "no person with that surname!" << endl;
 }
@@ -472,6 +514,7 @@ void showing_every_friend(vector <Friend> &friends) {
 
         i++;
     }
+
 
     if (check_if_friend_is_existing == 0) {
         cout << "You have no friends. Add some" <<endl;
@@ -660,9 +703,11 @@ int main () {
     loading_users_from_file(users);
 
     char choice_1, choice_2;
+    bool once_again = true;
 
     while (true) {
 
+    once_again = true;
         if (logged_users_ID == 0) {
 
             users_menu();
@@ -687,6 +732,8 @@ int main () {
         } else {
 
             friends_amount = loading_friends_from_file(friends, logged_users_ID);
+
+            while (once_again){
 
             friends_menu();
             cin >> choice_2;
@@ -732,6 +779,7 @@ int main () {
 
             case '8': {
                 logged_users_ID = 0;
+                once_again = false;
                 friends.clear();
                 break;
             }
@@ -740,6 +788,7 @@ int main () {
                 system("pause");
             }
         }
+    }
     }
     return 0;
 }
