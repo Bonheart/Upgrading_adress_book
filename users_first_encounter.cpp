@@ -83,32 +83,25 @@ void re_saving(vector <Friend> &friends) {
 
 }
 
-void saving_friends_to_file(vector <Friend> &friends) {
+void saving_friends_to_file(Friend friends) {
 
     fstream friends_file;
 
-    string name, surname, phone_number, email, adress;
-
-    friends_file.open ("friends.txt", ios::out );
+    friends_file.open ("friends.txt", ios::out | ios :: app);
 
     if (friends_file.good() ) {
 
-        int friends_amount = friends.size();
+            friends_file <<endl<< friends.friends_id << "|";
+            friends_file << friends.users_id << "|";
+            friends_file << friends.name << "|";
+            friends_file << friends.surname << "|";
+            friends_file << friends.phone_number<< "|";
+            friends_file << friends.email << "|";
+            friends_file << friends.adress << "|" ;
 
-        for (int i = 0; i < friends_amount; i++) {
-
-
-            friends_file <<endl<< friends[i].friends_id << "|";
-            friends_file << friends[i].users_id << "|";
-            friends_file << friends[i].name << "|";
-            friends_file << friends[i].surname << "|";
-            friends_file << friends[i].phone_number<< "|";
-            friends_file << friends[i].email << "|";
-            friends_file << friends[i].adress << "|" ;
-        }
     }
     friends_file.close();
-    friends.clear();
+
     //  re_saving(friends);
 }
 
@@ -284,7 +277,7 @@ int insert_friends_data(vector <Friend> &friends, int Logged_user_id, int friend
 
     friends.push_back(new_friends);
 
-    saving_friends_to_file(friends);
+    saving_friends_to_file(new_friends);
 
     return friends_amount + 1;
 }
@@ -584,13 +577,13 @@ void showing_friends_by_name (vector <Friend> &friends) {
 void showing_friends_by_surname (vector <Friend> &friends) {
     string surname = "";
 
-    cout << "enter surname to show friends with that surname: " << endl;
+    cout << "enter name to show friends with that surname: " << endl;
     cin >> surname;
 
     int i = 0;
     int surname_number = 0;
     int friends_amount = friends.size();
-    while (i < friends_amount) {
+    while (i < friends_amount){
 
         if (friends[i].surname == surname) {
             cout << "Friend's ID " << " --------- " << friends[i].friends_id << endl;
@@ -636,9 +629,37 @@ void showing_every_friend(vector <Friend> &friends, int logged_users_id) {
     }
 }
 
+void overwriting_file(vector <Friend> &friends) {
+
+    fstream overwrited_file, overwriting_friends_file;
+
+    overwriting_friends_file.open("friends.txt",ios::in);
+    overwrited_file.open("friends2.txt", ios :: out);
+
+    string line;
+
+    while(!overwriting_friends_file.eof()) {
+
+        getline(overwriting_friends_file,line);
+        for (int i = 0; i < friends.size(); i++) {
+
+            overwrited_file << friends[i].friends_id<<"|";
+            overwrited_file << friends[i].users_id << "|";
+            overwrited_file << friends[i].name <<"|";
+            overwrited_file << friends[i].surname << "|";
+            overwrited_file << friends[i].phone_number << "|";
+            overwrited_file << friends[i].email << "|" ;
+            overwrited_file << friends[i].adress << "|" << endl ;
+
+        }
+    }
+    overwriting_friends_file.close();
+    overwrited_file.close();
+}
+
 void modyfying_friend(vector <Friend> &friends) {
 
-    string name = "", surname = "", phone_number = "", email = "", adress = "";
+    Friend new_friends;
 
     char choice;
     int friends_id_to_edit;
@@ -730,10 +751,12 @@ void modyfying_friend(vector <Friend> &friends) {
         i++;
 
     }
+
     if (id_number == 0) {
         cout << "Kein Freund gefunden! Es tut mir leid..." << endl;
     }
-    saving_friends_to_file(friends);
+
+    overwriting_file(friends);
 }
 
 int deleting_friend(vector <Friend> &friends, int logged_users_id) {
@@ -789,8 +812,6 @@ int deleting_friend(vector <Friend> &friends, int logged_users_id) {
             cin >> choice;
         }
     }
-    saving_friends_to_file(friends);
-
     return 0;
 }
 
