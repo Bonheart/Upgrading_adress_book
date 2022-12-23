@@ -174,18 +174,7 @@ void password_changing(vector <User> &users, int Logged_user_ID) {
     }
 }
 
-int checking_last_friends_id(vector <Friend> &friends) {
-
-    int id_to_return ;
-
-    id_to_return = friends.back().friends_id;
-
-    cout << id_to_return << endl;
-
-    return id_to_return;
-}
-
-int loading_users_from_file(vector <User> &users) {
+void loading_users_from_file(vector <User> &users) {
 
     User new_user;
     string users_data = "";
@@ -223,39 +212,6 @@ int loading_users_from_file(vector <User> &users) {
 
     }
     file.close();
-    //return users.size();
-    return new_user.ID ;
-}
-
-int insert_friends_data(vector <Friend> &friends, int Logged_user_id, int friends_amount) {
-
-    Friend new_friends;
-    string name = "", surname = "", phone_number = "", email = "", adress = "";
-
-    cout << "insert name:" << endl;
-    new_friends.name = load_line();
-
-    cout << "insert surname: " << endl;
-    new_friends.surname = load_line();
-
-    cout << "insert phone number: " << endl;
-    new_friends.phone_number = load_line();
-
-    cout << "insert adress: " << endl;
-    new_friends.adress = load_line();
-
-    cout << "insert email: " << endl;
-    new_friends.email = load_line();
-
-    new_friends.users_id = Logged_user_id;
-
-    new_friends.friends_id = friends_amount +1;
-
-    friends.push_back(new_friends);
-
-    saving_friends_to_file(new_friends);
-
-    return friends_amount + 1;
 }
 
 int getting_last_ID () {
@@ -279,202 +235,99 @@ int getting_last_ID () {
     return last_ID;
 }
 
-string getting_id(string source_text, string first_vertical_line) {
+void insert_friends_data(vector <Friend> &friends, int Logged_user_id) {
 
-    size_t first_position_of_line;
-    string string_to_return = "";
-    first_position_of_line = source_text.find(first_vertical_line);
+    Friend new_friends;
+    string name = "", surname = "", phone_number = "", email = "", adress = "";
 
-    string_to_return = source_text.substr(0,first_position_of_line);
+    cout << "insert name:" << endl;
+    new_friends.name = load_line();
 
-    return string_to_return;
+    cout << "insert surname: " << endl;
+    new_friends.surname = load_line();
+
+    cout << "insert phone number: " << endl;
+    new_friends.phone_number = load_line();
+
+    cout << "insert adress: " << endl;
+    new_friends.adress = load_line();
+
+    cout << "insert email: " << endl;
+    new_friends.email = load_line();
+
+    new_friends.users_id = Logged_user_id;
+
+    new_friends.friends_id = getting_last_ID() +1;
+
+    friends.push_back(new_friends);
+
+    saving_friends_to_file(new_friends);
 }
 
-string  getting_users_id(string line_to_extract,string first_vertical_line, string second_vertical_line) {
+Friend loading_from_file (string personals_data) {
 
-    size_t first_position,second_position;
-    string string_to_extract = "";
+    Friend new_persons;
 
-    first_position = line_to_extract.find(first_vertical_line);
+    string persons_data{};
+    int persons_number = 1;
 
-    first_position++;
-    second_position = line_to_extract.find(second_vertical_line, first_position );
+    for (size_t index{}; index < personals_data.length(); ++index) {
 
-    if (second_position != string::npos) {
-        string_to_extract = line_to_extract.substr(first_position, second_position - first_position);
+        if (personals_data[index] != '|') {
+            persons_data += personals_data[index];
+
+        } else {
+
+            switch(persons_number) {
+
+            case 1:
+                new_persons.friends_id = stoi(persons_data);
+                break;
+            case 2:
+                new_persons.users_id = stoi(persons_data);
+                break;
+            case 3:
+                new_persons.name = persons_data;
+                break;
+            case 4:
+                new_persons.surname = persons_data;
+                break;
+            case 5:
+                new_persons.phone_number = persons_data;
+                break;
+            case 6:
+                new_persons.email = persons_data;
+                break;
+            case 7:
+                new_persons.adress = persons_data;
+                break;
+            }
+            persons_data = "";
+            persons_number ++;
+        }
     }
-    return string_to_extract;
+    return new_persons;
 }
 
-string  getting_name(string source_text,string first_vertical_line, string second_vertical_line, string third_vertical_line) {
-
-    size_t first_position_of_line,second_position_of_line,third_position_of_line;
-    string string_to_return = "";
-    first_position_of_line = source_text.find(first_vertical_line);
-
-    first_position_of_line++;
-    second_position_of_line = source_text.find(second_vertical_line, first_position_of_line );
-
-    second_position_of_line++;
-    third_position_of_line = source_text.find(third_vertical_line,second_position_of_line);
-
-    if(third_position_of_line != string::npos) {
-
-        string_to_return = source_text.substr(second_position_of_line, third_position_of_line - second_position_of_line);
-    }
-    return string_to_return;
-}
-
-string  getting_surname(string source_text,string first_vertical_line, string second_vertical_line, string third_vertical_line, string fourth_vertical_line) {
-
-    size_t first_position_of_line,second_position_of_line,third_position_of_line,fourth_position_of_line;
-    string newstr = "";
-    first_position_of_line = source_text.find(first_vertical_line);
-
-
-
-    first_position_of_line++;
-    second_position_of_line = source_text.find(second_vertical_line, first_position_of_line );
-
-
-    second_position_of_line++;
-    third_position_of_line = source_text.find(third_vertical_line,second_position_of_line);
-
-    third_position_of_line++;
-    fourth_position_of_line = source_text.find(fourth_vertical_line, third_position_of_line);
-    if(fourth_position_of_line != string ::npos) {
-
-        newstr = source_text.substr(third_position_of_line, fourth_position_of_line - third_position_of_line);
-    }
-    return newstr;
-}
-
-string  getting_phone_number(string source_text,string first_vertical_line, string second_vertical_line, string third_vertical_line, string fourth_vertical_line,string fifth_vertical_line) {
-
-    size_t first_position_of_line,second_position_of_line,third_position_of_line,fourth_position_of_line,fifth_position_of_line;
-    string newstr = "";
-    first_position_of_line = source_text.find(first_vertical_line);
-
-    first_position_of_line++;
-    second_position_of_line = source_text.find(second_vertical_line, first_position_of_line );
-
-    second_position_of_line++;
-    third_position_of_line = source_text.find(third_vertical_line,second_position_of_line);
-
-    third_position_of_line++;
-    fourth_position_of_line = source_text.find(fourth_vertical_line, third_position_of_line);
-
-    fourth_position_of_line++;
-    fifth_position_of_line = source_text.find(fifth_vertical_line, fourth_position_of_line);
-    if(fifth_position_of_line != string ::npos) {
-
-        newstr = source_text.substr(fourth_position_of_line, fifth_position_of_line - fourth_position_of_line);
-    }
-    return newstr;
-}
-
-string  getting_email(string source_text,string first_vertical_line, string second_vertical_line, string third_vertical_line, string fourth_vertical_line,string fifth_vertical_line, string sixth_vertical_line) {
-
-    size_t first_position_of_line,second_position_of_line,third_position_of_line,fourth_position_of_line,fifth_position_of_line,sixth_position_of_line;
-    string newstr = "";
-    first_position_of_line = source_text.find(first_vertical_line);
-
-    first_position_of_line++;
-    second_position_of_line = source_text.find(second_vertical_line, first_position_of_line );
-
-    second_position_of_line++;
-    third_position_of_line = source_text.find(third_vertical_line,second_position_of_line);
-
-    third_position_of_line++;
-    fourth_position_of_line = source_text.find(fourth_vertical_line, third_position_of_line);
-
-    fourth_position_of_line++;
-    fifth_position_of_line = source_text.find(fifth_vertical_line, fourth_position_of_line);
-
-    fifth_position_of_line++;
-    sixth_position_of_line = source_text.find(sixth_vertical_line, fifth_position_of_line);
-    if(sixth_position_of_line != string ::npos) {
-
-        newstr = source_text.substr(fifth_position_of_line, sixth_position_of_line - fifth_position_of_line);
-    }
-    return newstr;
-}
-
-string  getting_adress(string source_text,string first_vertical_line, string second_vertical_line, string third_vertical_line, string fourth_vertical_line,string fifth_vertical_line, string sixth_vertical_line, string seventh_vertical_line) {
-
-    size_t first_position_of_line,second_position_of_line,third_position_of_line,fourth_position_of_line,fifth_position_of_line,sixth_position_of_line,seventh_position_of_line;
-    string newstr = "";
-    first_position_of_line = source_text.find(first_vertical_line);
-
-    first_position_of_line++;
-    second_position_of_line = source_text.find(second_vertical_line, first_position_of_line );
-
-    second_position_of_line++;
-    third_position_of_line = source_text.find(third_vertical_line,second_position_of_line);
-
-    third_position_of_line++;
-    fourth_position_of_line = source_text.find(fourth_vertical_line, third_position_of_line);
-
-    fourth_position_of_line++;
-    fifth_position_of_line = source_text.find(fifth_vertical_line, fourth_position_of_line);
-
-    fifth_position_of_line++;
-    sixth_position_of_line = source_text.find(sixth_vertical_line, fifth_position_of_line);
-
-    sixth_position_of_line++;
-    seventh_position_of_line = source_text.find(seventh_vertical_line, sixth_position_of_line);
-
-    if(seventh_position_of_line != string ::npos) {
-
-        newstr = source_text.substr(sixth_position_of_line, seventh_position_of_line - sixth_position_of_line);
-    }
-
-    return newstr;
-}
-
-int loading_friends_from_file(vector <Friend> &friends, int logged_user_id) {
+void loading_friends_from_file (vector <Friend> &friends, int logged_user_id) {
 
     Friend new_friends;
 
-    string personals_data = "";
-    string lastLine;
     fstream file;
 
-    file.open("friends.txt", ios :: in);
+    file.open("friends.txt", ios::in);
+
+    string data_to_extract = "";
 
     if (file.good()) {
+        while (getline(file,data_to_extract)) {
+            new_friends = loading_from_file(data_to_extract);
 
-        while(getline(file,personals_data)) {
-
-            int persons_number = 1;
-
-            for (size_t index{}; index < personals_data.length(); ++index) {
-
-                switch(persons_number) {
-
-                case 1:
-
-                    new_friends.friends_id = stoi(getting_id(personals_data, "|"));
-                    new_friends.users_id = (stoi(getting_users_id(personals_data,"|","|")));
-                    new_friends.name = getting_name(personals_data, "|", "|", "|");
-                    new_friends.surname = getting_surname(personals_data, "|", "|", "|","|" );
-                    new_friends.phone_number = getting_phone_number(personals_data, "|", "|", "|","|", "|");
-                    new_friends.email = getting_email(personals_data, "|", "|", "|","|", "|","|");
-                    new_friends.adress = getting_adress(personals_data, "|", "|", "|","|", "|","|","|");
-
-                    break;
-                }
-                if(new_friends.users_id == logged_user_id) {
-                    friends.push_back(new_friends);
-                } else continue;
-                personals_data = "";
-                persons_number ++;
-            }
+            if (new_friends.users_id == logged_user_id)
+                friends.push_back(new_friends);
         }
+        file.close();
     }
-    file.close();
-
-    return getting_last_ID();
 }
 
 bool checking_if_friend_exists(vector <Friend> &friends, int friends_id) {
@@ -582,51 +435,6 @@ void showing_every_friend(vector <Friend> &friends, int logged_users_id) {
     if (check_if_friend_is_existing == 0) {
         cout << "You have no friends. Add some" <<endl;
     }
-}
-
-Friend loading_from_file (string personals_data) {
-
-    Friend new_persons;
-
-    string persons_data{};
-    int persons_number = 1;
-
-    for (size_t index{}; index < personals_data.length(); ++index) {
-
-        if (personals_data[index] != '|') {
-            persons_data += personals_data[index];
-
-        } else {
-
-            switch(persons_number) {
-
-            case 1:
-                new_persons.friends_id = stoi(persons_data);
-                break;
-            case 2:
-                new_persons.users_id = stoi(persons_data);
-                break;
-            case 3:
-                new_persons.name = persons_data;
-                break;
-            case 4:
-                new_persons.surname = persons_data;
-                break;
-            case 5:
-                new_persons.phone_number = persons_data;
-                break;
-            case 6:
-                new_persons.email = persons_data;
-                break;
-            case 7:
-                new_persons.adress = persons_data;
-                break;
-            }
-            persons_data = "";
-            persons_number ++;
-        }
-    }
-    return new_persons;
 }
 
 void overwriting_file(vector <Friend> &friends, int i) {
@@ -812,7 +620,6 @@ void overwriting_file_2(vector <Friend> &friends, int i) {
                 file_to_overwrtie << existing_friend.email << "|" ;
                 file_to_overwrtie << existing_friend.adress << "|" << endl ;
             }
-
         }
         line_which_crosses_file++;
     }
@@ -822,7 +629,7 @@ void overwriting_file_2(vector <Friend> &friends, int i) {
     rename("friends2.txt","friends.txt");
 }
 
-int deleting_friend(vector <Friend> &friends, int logged_users_id) {
+void deleting_friend(vector <Friend> &friends, int logged_users_id) {
 
     Friend new_friends;
 
@@ -864,17 +671,13 @@ int deleting_friend(vector <Friend> &friends, int logged_users_id) {
 
                         overwriting_file_2(friends,i);
                         friends.erase(friends.begin() + i);
-
                     }
                 }
-
                 cout << "user deleted." << endl;
-                system("pause");
                 break;
 
             } else if (choice == 'n') {
                 cout << "OK. user not deleted" << endl;
-                system ("pause");
                 break;
 
             } else {
@@ -883,7 +686,6 @@ int deleting_friend(vector <Friend> &friends, int logged_users_id) {
             }
         }
     }
-    return getting_last_ID();
 }
 
 int main () {
@@ -892,7 +694,6 @@ int main () {
     vector <Friend> friends;
 
     int logged_users_ID = 0;
-    int friends_amount = 0;
 
     loading_users_from_file(users);
 
@@ -916,6 +717,7 @@ int main () {
             }
             case '2': {
                 logged_users_ID = logging(users);
+                loading_friends_from_file(friends, logged_users_ID);
                 break;
             }
             case '3': {
@@ -927,8 +729,6 @@ int main () {
             }
         } else {
 
-            friends_amount = loading_friends_from_file(friends, logged_users_ID);
-
             while (once_again) {
 
                 friends_menu();
@@ -937,8 +737,7 @@ int main () {
                 switch (choice_2) {
 
                 case '1' : {
-                    friends_amount = insert_friends_data(friends,logged_users_ID,friends_amount);
-
+                    insert_friends_data(friends,logged_users_ID);
                     system("pause");
                     break;
                 }
@@ -965,7 +764,7 @@ int main () {
                 }
 
                 case '6': {
-                    friends_amount = deleting_friend(friends, logged_users_ID);
+                    deleting_friend(friends, logged_users_ID);
                     system("pause");
                     break;
                 }
@@ -976,10 +775,12 @@ int main () {
                 }
 
                 case '8': {
+
                     logged_users_ID = 0;
                     once_again = false;
-                 //   friends.clear();
+                    friends.clear();
                     break;
+
                 }
                 default:
                     cout << "enter proper number: " << endl;
