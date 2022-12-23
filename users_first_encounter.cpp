@@ -320,14 +320,16 @@ void loading_friends_from_file (vector <Friend> &friends, int logged_user_id) {
     string data_to_extract = "";
 
     if (file.good()) {
+
         while (getline(file,data_to_extract)) {
+
             new_friends = loading_from_file(data_to_extract);
 
             if (new_friends.users_id == logged_user_id)
                 friends.push_back(new_friends);
         }
-        file.close();
     }
+    file.close();
 }
 
 bool checking_if_friend_exists(vector <Friend> &friends, int friends_id) {
@@ -479,9 +481,9 @@ void overwriting_file(vector <Friend> &friends, int i) {
         }
     }
     overwitting_file.close();
-     remove("friends.txt");
+    remove("friends.txt");
     file_to_overwrtie.close();
-     rename("friends2.txt","friends.txt");
+    rename("friends2.txt","friends.txt");
 }
 void modifying_friend(vector <Friend> &friends, int i) {
 
